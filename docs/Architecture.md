@@ -156,3 +156,188 @@ Client-side and server-side invalidation are independent — a fresh backend inv
 
 Device identification for the session list is derived from the User-Agent header at session-creation time (browser/OS/device type) — not a persisted device fingerprint. Location (city/country) is deliberately deferred for v1; device + IP address is sufficient to distinguish sessions.
 
+---
+
+## API route list
+
+Conventions: camelCase in all JSON. Cursor pagination where relevant. Every authenticated endpoint requires a valid session; CSRF required on all state-changing requests.
+
+### `GET /api/auth/csrf` — L0
+
+Sets the CSRF cookie.
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "CSRF cookie set successfully." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/register` — L0
+
+Body: `email`, `password`, `fullName`
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "If this email exists, a verification email has been sent. Please check your inbox." }` *(enumeration-safe — identical regardless of whether the email exists)* |
+| 400 | `{ "message": "Validation failed.", "errors": { "email": ["Email is required.", "Email must be a valid email address."], "password": ["Password is required.", "Password must be at least 12 characters long.", "Password must not exceed 64 characters.", "This password is too common. Please choose a different password.", "This password has been found in a data breach. Please choose a different password."], "fullName": ["Full name is required.", "Full name must be at least 2 characters long.", "Full name must not exceed 200 characters."] } }` |
+| 401 | `{ "detail": "CSRF token missing." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/login` — L0
+
+Body: `email`, `password`
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "Login successful." }` |
+| 400 | `{ "message": "Validation failed.", "errors": { "email": ["Email is required.", "Email must be a valid email address."], "password": ["Password is required.", "Password must be at least 12 characters long."], "nonFieldErrors": ["Invalid credentials."] } }` |
+| 401 | `{ "detail": "CSRF token missing." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/reset-password` — L0
+
+Body: `email`
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "If this email exists, a password reset email has been sent. Please check your inbox." }` *(enumeration-safe)* |
+| 400 | `{ "message": "Validation failed.", "errors": { "email": ["Email is required.", "Email must be a valid email address."] } }` |
+| 401 | `{ "detail": "CSRF token missing." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `GET /api/auth/sessions` — L1
+
+| Status | Body |
+|---|---|
+| 200 | `{ "sessions": [ { "id": "sess_938472910a3f8b1c", "isCurrent": true, "createdAt": "2026-07-15T08:30:00Z", "lastActiveAt": "2026-07-20T16:20:00Z", "expiresAt": "2026-08-15T08:30:00Z", "ipAddress": "192.0.2.1", "device": { "browser": "Chrome 124.0", "os": "macOS 14.4", "deviceType": "desktop" } } ], "previous": "https://api.example.com/api/auth/sessions?cursor=prev_cursor_value", "next": "https://api.example.com/api/auth/sessions?cursor=next_cursor_value" }` |
+| 401 | `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `DELETE /api/auth/sessions/{sessionId}` — L2
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "Session terminated successfully." }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 404 | `{ "detail": "Session not found." }` *(same message whether the session doesn't exist or belongs to another user)* |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `DELETE /api/auth/sessions/terminate-all` — L1
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "All other sessions terminated successfully." }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `PATCH /api/auth/change-email` — L2
+
+Body: `newEmail`
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "Email change request successful. A verification email has been sent to your new address." }` |
+| 400 | `{ "message": "Validation failed.", "errors": { "newEmail": ["New email is required.", "New email must be a valid email address."] } }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/change-password` — L2
+
+Body: `oldPassword`, `newPassword`
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "Password change successful." }` |
+| 400 | `{ "message": "Validation failed.", "errors": { "oldPassword": ["Old password is required."], "newPassword": ["New password is required.", "New password must be at least 12 characters long.", "New password must not exceed 64 characters.", "This password is too common. Please choose a different password.", "This password has been found in a data breach. Please choose a different password."], "nonFieldErrors": ["Old password is incorrect."] } }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `GET /api/auth/me` — L1
+
+| Status | Body |
+|---|---|
+| 200 | `{ "id": "user_1234567890abcdef", "email": "youremail@email.com", "fullName": "Your Full Name", "isEmailVerified": true, "mfaEnabled": true, "createdAt": "2026-07-15T08:30:00Z", "loginMethod": "email_password" }` *(loginMethod: `email_password` \| `google_oauth` \| `github_oauth`)* |
+| 401 | `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `GET /api/auth/mfa` — L1
+
+Initiates MFA setup.
+
+| Status | Body |
+|---|---|
+| 200 | `{ "qrCodeUrl": "https://example.com/qrcode.png", "secret": "JBSWY3DPEHPK3PXP" }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/mfa/verify` — L1
+
+Body: `code`
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "MFA verification successful." }` |
+| 400 | `{ "message": "Validation failed.", "errors": { "code": ["MFA code is required.", "MFA code must be a 6-digit number."], "nonFieldErrors": ["Invalid MFA code."] } }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 409 | `{ "detail": "MFA is not enabled for this user." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/mfa/disable` — L1
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "MFA disabled successfully." }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 409 | `{ "detail": "MFA is not enabled for this user." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/mfa/recovery-codes` — L1
+
+| Status | Body |
+|---|---|
+| 200 | `{ "recoveryCodes": ["code1", "code2", "code3", "code4", "code5", "code6", "code7", "code8", "code9", "code10"] }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 409 | `{ "detail": "MFA is not enabled for this user." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/logout` — L1
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "Logout successful." }` |
+| 401 | `{ "detail": "CSRF token missing." }` or `{ "detail": "Authentication credentials were not provided." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/verify-email` — L0
+
+Body: `token`
+
+Called by the React landing page on mount, after the user clicks the link in their email.
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "Email verified successfully." }` |
+| 400 | `{ "message": "Validation failed.", "errors": { "token": ["Token is required."] } }` |
+| 409 | `{ "detail": "This verification link has already been used." }` |
+| 410 | `{ "detail": "This verification link has expired. Please request a new one." }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### `POST /api/auth/resend-verification` — L0/L1 hybrid
+
+Body: `email` *(optional — falls back to `request.user.email` if authenticated)*
+
+| Status | Body |
+|---|---|
+| 200 | `{ "detail": "If an account with this email exists and is unverified, a new verification email has been sent." }` *(enumeration-safe — identical regardless of whether the account exists, is already verified, or doesn't exist)* |
+| 400 | `{ "message": "Validation failed.", "errors": { "email": ["Email is required if not authenticated.", "Email must be a valid email address."] } }` |
+| 429 | `{ "detail": "Please wait before requesting another verification email.", "retryAfter": 45 }` |
+| 500 | `{ "detail": "An unexpected error occurred. Please try again later." }` |
+
+### OAuth — deferred
+
+**Google, GitHub init + callback** — handled via django-allauth headless's default URL scheme. Exact paths confirmed on Day 11 (allauth install) / Day 22–23 (provider config), documented then. One redirect + one callback per provider; new-vs-existing-user branching happens inside the callback per the Day 24 account-linking policy, not via separate signup/login routes.
+
+---
+
+## Invoicify conventions 
+
+API conventions: this project reuses Invoicify's conventions — camelCase JSON, cursor pagination — rather than diverging. The sessions list is the one endpoint in this project where pagination is genuinely relevant.
