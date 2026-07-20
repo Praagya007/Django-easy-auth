@@ -109,3 +109,13 @@ Django_Easy_Auth/
 - Every app has its own `exceptions.py` for plain, app-specific exceptions that services raise (e.g. `TokenExpired`). This is separate from `core/exceptions.py`, which holds the one global DRF exception handler — it intercepts anything unhandled project-wide, formats a uniform JSON error payload, and logs it. Infra-level, not business-level.
 - A service function is skipped only when the abstraction would add more complexity than it removes. Given this project's nature, that's the exception, not the default — service layer exists for almost every view.
 
+## Serializer conventions
+
+1. Serializers only serialize/deserialize. No business logic.
+2. `SerializerMethodField` is avoided unless necessary, and only for read-only fields — never for write operations.
+3. Validated data is passed to the service layer as keyword arguments:
+   ```python
+   your_service_function(**serializer.validated_data)
+   ```
+4. Serializers do strict input validation — password length/complexity, email format, and similar shape-level checks. This is genuinely their job.
+5. Serializers only raise input/output-level exceptions. Everything else is raised elsewhere: `permissions.py` for permission exceptions, `services.py` for business-logic exceptions, the global exception handler for 500s (never leaking a full stack trace to the client).
