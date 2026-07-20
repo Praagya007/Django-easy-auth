@@ -101,3 +101,18 @@ your_service_function(**serializer.validated_data)
 
 5) Serializers only generate input/output level exceptions. All other exceptions will be raised by permissions.py (for permissions), services.py (for business logic), and global exception handler (for something like 500s - never leaking a full stack trace to the client).
 
+The permissions architecture:
+1) Permissions will be handled by permissions.py file in each application, unless the logic is simply a one off that wiring it to views is totally fine.
+2) Permissions shall raise 404 not found for resources that don't belong to the user. This is a security measure to avoid leaking information about the existence of resources.
+3) Permissions.py file will only raise permission related exceptions. Not anything other than this. 
+4) Permission will be used like this: get object or raise 404 works best esp. for private data like this which other user has no business accessing. Otherwise, for data that is let's say shared but needs role based access, we use a permission class to raise 403 forbidden, an actual use case.
+
+The level 0 permission: 
+- Login, sign up, password reset without login, verifying an email, fetching the CSRF token from the @ensure_csrf_cookie decorator. This is level 0 because it doesn't require the user to be logged in. This is the only level of permission that doesn't require the user to be logged in.
+
+The level 1 permission:
+- All authenticated endpoints that require the user to be logged in. This is the most common level of permission. A users' session list, a users' profile, changing a users' password, changing a users' email, etc. All of these require the user to be logged in. This is level 1 permission.
+
+Level 2 permission:
+- Level 1 permission + object level permission. This is the most strict level of permission. This is for endpoints that require the user to be logged in and also require the user to have access to a specific resource. For example, if a user wants to change their password, they need to be logged in (level 1) and they need to have access to their own account (level 2). Same goes for changing a users' email, changing a users' profile, etc. All of these require the user to be logged in and also require the user to have access to their own account. This is level 2 permission. For any resource that a user has no business accessing, we will return a 404 not found, not 403 forbidden. This is a security measure to avoid leaking information about the existence of resources.
+
