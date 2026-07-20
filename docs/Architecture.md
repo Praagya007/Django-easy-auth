@@ -116,3 +116,24 @@ The level 1 permission:
 Level 2 permission:
 - Level 1 permission + object level permission. This is the most strict level of permission. This is for endpoints that require the user to be logged in and also require the user to have access to a specific resource. For example, if a user wants to change their password, they need to be logged in (level 1) and they need to have access to their own account (level 2). Same goes for changing a users' email, changing a users' profile, etc. All of these require the user to be logged in and also require the user to have access to their own account. This is level 2 permission. For any resource that a user has no business accessing, we will return a 404 not found, not 403 forbidden. This is a security measure to avoid leaking information about the existence of resources.
 
+Caching strategies:
+The api/auth/me endpoint will be cached for 5 minutes, on the client side with React Query. This is to avoid hitting the database for every request. The cache will be invalidated when the user logs out, changes their password, changes their email, or changes their profile. This is to ensure that the user always gets the most up to date information. Here, the cache never stays stale because the cache is busted every time user does a mutating action. However, TTL exists purely from a data sync pov/fallback POV. 
+
+On the backend, this will be cached using Redis. The reason is very simple, the read to write ratio is overwhelmingly high. Plus, a user keeps hitting this exact endpoint for every protected route. You can set a very high TTL for this on the backend because it will always have fresh data. The read to write ratio is also overwhelmingly high. Something like 7 days and cache warmup via a cron during off-peak hours would be a good idea. These are few decisions on how api/auth/me will be cached and invalidated: 
+
+1) On a logout (its not necessary, if multiple devices are logged in, the api/auth/me endpoint will be available for other devices)
+2) On a email change.
+3) On a password change.
+4) On a profile change, like full name change, etc.
+5) On a nuclear logout (logout from all devices).
+6) MFA enabled/disabled. 
+7) Login method alterations like adding/removing social logins, linking accounts, etc.
+
+
+Always invalidate this client side cache on logout, password change, email change, and profile change. This is to ensure that the user always gets the most up to date information. And a user doesn't navigate to protected routes without being logged in.
+
+The list of sessions is another endpoint that is what users will see. Thisq is ideal because you don't want to keep pinging your server for this every time. Invalidate the react query cache on a user logout, a nuclear logout, or a specific log out from X device. 
+
+For the backend, I would consider caching it using Redis as well. It can be cached via a scoping that is unique per user. Since users barely log out and login their accounts, this endpoint also has a high read to write ratio. I would set a high TTL and invalidate the cache on a user logout, a nuclear logout, or a specific log out from X device, essentially via a write through cache. Invalidate the cache on any session purge event. I would serve the accurate info from the DB if the cache fails, and stop calling it and log the error on Sentry. 
+
+
