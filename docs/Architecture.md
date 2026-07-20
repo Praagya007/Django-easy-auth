@@ -85,3 +85,19 @@ Django_Easy_Auth/
     ├── services.py
     ├── views.py
     └── tests.py
+
+The service layer rule: 
+- The service layer is where all business logic will live. Plain views (no business logic,
+views will handle routing. And similarly, every single service layer will have a exceptions.py file per application that are plain exceptions that services will raise). It will carry over. The only time for a function, a service layer won't exist will be a specific scenario where an abstraction will create more complexity. However, due to the nature of this project, the service layer will exist for almost every view. Where it won't need, I won't write a separate service function. 
+
+The serializer convention: 
+1) Serializers won't do anything else than serialize and deserialize data. They won't have any business logic. 
+2) SerializerMethodField will be avoided unless absolutely necessary. It's only for read only fields btw, not for write operations.
+3) The valid data by serialziers will be passed to service layer like this: 
+```python
+your_service_function(**serializer.validated_data)
+```
+4) Serializers shall do strict input validation on the data. Things like password length, password convention, email format, etc. this is serializers' job actual one. 
+
+5) Serializers only generate input/output level exceptions. All other exceptions will be raised by permissions.py (for permissions), services.py (for business logic), and global exception handler (for something like 500s - never leaking a full stack trace to the client).
+
