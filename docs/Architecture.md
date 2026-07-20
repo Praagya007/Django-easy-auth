@@ -145,3 +145,14 @@ Django_Easy_Auth/
 - Server side: Redis, scoped per user, high TTL justified by a high read/write ratio (users rarely log in/out relative to how often the list might be viewed). Write-through cache; invalidated on any session-purge event (not just explicit logout — this includes the Day 35 ghost-session purge). On cache failure, serve accurate data straight from the DB, stop relying on the cache, and log the failure to Sentry.
 
 Client-side and server-side invalidation are independent — a fresh backend invalidation does not guarantee an open browser tab's client cache reflects it instantly; the 5-minute client fallback window covers that gap by design, not by bug.
+
+## Session lifecycle
+
+1. Without "remember me," the session ends as soon as the browser closes.
+2. With "remember me," session TTL is 7 days with sliding expiration — activity extends it, tracked via `last_active_at`. 7 days of inactivity expires the session.
+3. On password change:
+   - Changed while **logged out** (via reset flow): purge all sessions, all devices.
+   - Changed while **logged in**: purge all sessions except the current one, so the user isn't logged out of the session they're actively using. Same rule applies to email changes. Non-sensitive field changes (e.g. full name) don't purge anything.
+
+Device identification for the session list is derived from the User-Agent header at session-creation time (browser/OS/device type) — not a persisted device fingerprint. Location (city/country) is deliberately deferred for v1; device + IP address is sufficient to distinguish sessions.
+
