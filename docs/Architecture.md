@@ -132,3 +132,16 @@ Django_Easy_Auth/
 **Level 1** — authenticated: session list, profile, password change, email change — anything that just requires being logged in.
 
 **Level 2** — level 1 + object ownership: same actions as above, scoped to the specific resource being *this* user's. Anything the user has no business accessing returns 404, never 403.
+
+## Caching strategy
+
+**`/api/auth/me`**
+- Client side: React Query, 5-minute TTL. The cache is actively busted on every mutating action below, so it's never meaningfully stale in normal use — the TTL exists purely as a fallback/data-sync safety net, not as the primary invalidation mechanism.
+- Server side: Redis, ~7-day TTL, cache warmup via cron during off-peak hours. Justified by an overwhelmingly high read/write ratio — this endpoint gets hit on every protected route.
+- Invalidation events (both client and server cache, unless noted): email change, password change, profile change (full name, etc.), nuclear logout (all devices), MFA enabled/disabled, login-method changes (linking/unlinking social accounts). A single-device logout does **not** invalidate this cache — other devices' sessions remain valid and `/me` for them is still correct.
+
+**Session list**
+- Client side: React Query, invalidated on logout, nuclear logout, or a specific device logout.
+- Server side: Redis, scoped per user, high TTL justified by a high read/write ratio (users rarely log in/out relative to how often the list might be viewed). Write-through cache; invalidated on any session-purge event (not just explicit logout — this includes the Day 35 ghost-session purge). On cache failure, serve accurate data straight from the DB, stop relying on the cache, and log the failure to Sentry.
+
+Client-side and server-side invalidation are independent — a fresh backend invalidation does not guarantee an open browser tab's client cache reflects it instantly; the 5-minute client fallback window covers that gap by design, not by bug.
