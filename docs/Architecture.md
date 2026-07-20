@@ -119,3 +119,16 @@ Django_Easy_Auth/
    ```
 4. Serializers do strict input validation — password length/complexity, email format, and similar shape-level checks. This is genuinely their job.
 5. Serializers only raise input/output-level exceptions. Everything else is raised elsewhere: `permissions.py` for permission exceptions, `services.py` for business-logic exceptions, the global exception handler for 500s (never leaking a full stack trace to the client).
+
+## Permissions architecture
+
+1. Permissions live in each app's `permissions.py`, unless the logic is a genuine one-off simple enough to wire directly onto the view.
+2. Permissions raise 404, not 403, for resources that don't belong to the requesting user — this avoids leaking whether the resource exists at all.
+3. `permissions.py` only raises permission-related exceptions — nothing else.
+4. Mechanism depends on the case: `get_object_or_404` scoped to the requesting user is the default for private, per-user data (handles level-2 object ownership automatically, collapsing "doesn't exist" and "not yours" into the same 404). A permission class raising 403 is used instead for genuinely shared/role-based access cases.
+
+**Level 0** — no auth required: login, signup, password reset (unauthenticated), email verification, CSRF cookie fetch.
+
+**Level 1** — authenticated: session list, profile, password change, email change — anything that just requires being logged in.
+
+**Level 2** — level 1 + object ownership: same actions as above, scoped to the specific resource being *this* user's. Anything the user has no business accessing returns 404, never 403.
