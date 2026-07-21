@@ -9,6 +9,7 @@ Sprint 0, Day 3. System diagram, folder structure, service-layer / serializer / 
 ```mermaid
 flowchart TB
     Browser["React SPA"]
+    Cloudflare["Cloudflare Turnstile", "bot mitigation", "WAF"]
     Caddy["Caddy — reverse proxy, TLS, static files"]
     Django["Django + DRF (Gunicorn with Uvicorn workers)"]
     Celery["Celery worker"]
