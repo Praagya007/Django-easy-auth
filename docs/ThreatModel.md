@@ -72,6 +72,7 @@
 
 **Mitigation:** Validate the `state` parameter on every authorization flow (CSRF/forgery protection). Perform the authorization code exchange and ID/access token validation server-side — verify issuer, audience, nonce (where applicable), and token signatures. Only establish a local session after successful server-side verification. Never treat a callback, authorization code, or token alone as equivalent to an authenticated session.
 
+**See More:** [OAuth Flow Explained](o-auth-flow-explained.md) for a detailed breakdown of the OAuth flow and security considerations.
 ---
 
 ## 4. Anonymous Internet User — Email Verification & Password Reset Confirmation
@@ -86,6 +87,7 @@
 
 **Mitigation:** Cryptographically secure, high-entropy, single-use tokens with short expiry. Invalidate immediately on use or replacement. Rate limit the *confirmation* endpoints themselves, not just the endpoints that generate the emails. Return generic responses so token validity can't be inferred from response differences.
 
+**See More:** [Email Verification & Password Reset Explained](email-verification-and-password-reset-explained.md) for a detailed breakdown of the email verification and password reset flow and security considerations.
 
 <!-- To maximize throughput on password hashing, alter the Argon2id parameters to be more efficient. To balance security and throughput, use these parameters: time_cost = 2 (2 iterations), memory cost= 16384 (16MiB) and parallelism 1. This is a good balance between security and throughput. Obviously more iterations and more memory cost would be more secure, but it also slows down throughput and Python's GIL is a bottleneck. 
 
