@@ -19,7 +19,7 @@ Primary audience: developers shipping a single-tenant SaaS-shaped web app who wa
 - Eliminate the standard authentication failure modes: CSRF, CORS misconfiguration, weak password hashing, predictable reset tokens, timing attacks, brute force, user enumeration.
 - Sessions + Redis for auth state, not JWT — avoids blacklisting, refresh-token rotation, and logout-that-doesn't-actually-log-out, all of which are self-inflicted JWT problems.
 - Security-first as a design constraint, not a bullet point retrofitted later.
-- Sentry (error tracking) and Loki (log aggregation): in scope for this project, added at Tier 4 (Day 53/58 — structured logging and the ASVS pass), not Sprint 0 or Tier 1. Not deferred past v1.0; just not early. Never return a 500 full stack trace to the client. Always return a generic error message, and log the full stack trace server-side. Global error handler for Django + DRF, not just a per-view decorator. (See Day 53 for the full reasoning.)
+- Sentry (error tracking) and Loki (log aggregation) and Cloudflare Turnstile/turning it on: in scope for this project, added at Tier 4 (Day 53/58 — structured logging and the ASVS pass), not Sprint 0 or Tier 1. Not deferred past v1.0; just not early. Never return a 500 full stack trace to the client. Always return a generic error message, and log the full stack trace server-side. Global error handler for Django + DRF, not just a per-view decorator. (See Day 53 for the full reasoning.) 
 
 
 ## Non-goals
@@ -35,7 +35,7 @@ Primary audience: developers shipping a single-tenant SaaS-shaped web app who wa
 
 ## Tech stack
 
-**Backend:** Django + DRF as the core. PostgreSQL for persistence. Redis for session storage, `/api/auth/me` caching, and rate-limiting. Celery for background work (primarily email sends) so nothing user-facing blocks on SMTP. Custom user model (email as `USERNAME_FIELD`, full name, email-verification status) rather than Django's default. Argon2id for password hashing via Django's built-in hasher framework. Sentry + Loki for error tracking and logging (Tier 4, not Sprint 0).
+**Backend:** Django + DRF as the core. PostgreSQL for persistence. Redis for session storage, `/api/auth/me` caching, and rate-limiting. Celery for background work (primarily email sends) so nothing user-facing blocks on SMTP. Custom user model (email as `USERNAME_FIELD`, full name, email-verification status) rather than Django's default. Argon2id for password hashing via Django's built-in hasher framework. Cloudflare Turnstile for bot mitigation and WAF. Sentry + Loki for error tracking and logging (Tier 4, not Sprint 0).
 
 **Frontend:** React + Vite. React Query for server-state/caching (this is what makes the `/me` caching strategy work). Tailwind CSS for styling.
 
