@@ -9,34 +9,36 @@ Sprint 0, Day 3. System diagram, folder structure, service-layer / serializer / 
 ```mermaid
 flowchart TB
     Browser["React SPA"]
-    Cloudflare["Cloudflare Turnstile", "bot mitigation", "WAF"]
-    Caddy["Caddy — reverse proxy, TLS, static files"]
+    Cloudflare["Cloudflare (Turnstile, Bot Mitigation, WAF)"]
+    Caddy["Caddy (Reverse Proxy, TLS, Static Files)"]
     Django["Django + DRF (Gunicorn with Uvicorn workers)"]
     Celery["Celery worker"]
-    Redis[("Redis — sessions + broker")]
+    Redis[("Redis (Sessions + Broker)")]
     Postgres[("PostgreSQL")]
     Google["Google OAuth"]
     GitHub["GitHub OAuth"]
     SMTP["SMTP (Brevo / SES)"]
     Inbox["User inbox"]
 
-    Browser -->|HTTPS| Caddy
+    Browser -->|HTTPS| Cloudflare
+    Cloudflare -->|Filtered Traffic| Caddy
     Caddy -->|"/api/*"| Django
-    Caddy -->|static build| Browser
+    Caddy -->|Static Build| Browser
 
-    Django <-->|session read/write| Redis
-    Django <-->|queries| Postgres
-    Django -->|enqueue task| Redis
-    Django -.->|redirect + callback| Google
-    Django -.->|redirect + callback| GitHub
+    Django <-->|Session Read/Write| Redis
+    Django <-->|Queries| Postgres
+    Django -->|Enqueue Task| Redis
+    Django -.->|Redirect + Callback| Google
+    Django -.->|Redirect + Callback| GitHub
 
-    Redis -->|dequeue task| Celery
-    Celery -->|queries| Postgres
-    Celery -->|send| SMTP
-    SMTP -->|deliver| Inbox
+    Redis -->|Dequeue Task| Celery
+    Celery -->|Queries| Postgres
+    Celery -->|Send| SMTP
+    SMTP -->|Deliver| Inbox
+
 ```
 
-Browser talks only to Caddy. Caddy routes `/api/*` to Django and serves the built React app directly for everything else. Django reads/writes Redis for sessions, queries Postgres, and redirects to Google/GitHub for OAuth. Django enqueues jobs onto Redis; Celery dequeues them to send email via SMTP.
+Browser traffic routes through Cloudflare first, which provides WAF, bot mitigation, and Turnstile challenges before hitting your infrastructure. Once cleared, traffic reaches Caddy, which serves the built React app directly for frontend routes and proxies all /api/* requests to Django. Django handles session states via Redis, queries PostgreSQL, and manages external authentication through Google and GitHub OAuth redirects. For asynchronous jobs, Django enqueues tasks into Redis, allowing Celery to dequeue them and trigger transactional emails via SMTP to the user's inbox.
 
 ---
 
