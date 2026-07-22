@@ -27,3 +27,6 @@ Example: `fix(auth): purge redis session on password reset`
 - Formatter-only diffs (Ruff format run across existing files) get their own commit, never bundled with logic changes.
 ## Local setup
 - See README setup instructions (filled in later.)
+
+## AI-assisted development rule:
+AI-tool workflow. For anything security-critical or judgment-based — auth logic, session handling, threat modeling, timing/race analysis, and any day the checklist marks as a decision day — I write the first version myself before involving AI. AI's job there is review: flag what's wrong, explain why, suggest a fix; it doesn't author the logic. For scaffolding, config, and CRUD-shaped work — Docker, CI YAML, settings boilerplate, test fixtures — AI can draft directly and I review line by line before merging. If a day doesn't clearly fall in either bucket, it defaults to the first mode.
