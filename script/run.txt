@@ -1,0 +1,12 @@
+How to run this script on create_issues.sh for automatically creating issues github? 
+
+navigate to the directory: cd django_easy_auth/script
+Then run this command: & "C:\Program Files\Git\bin\bash.exe" create_issues.sh, if you already
+have git/gh installed on your PC. 
+
+The format for the script: 
+gh issue create --title "YOUR TITLE HERE"
+ --body-file "YOUR .md file here" --label "YOURLABELHERE" --milestone "YOURMILESTONE HERE"
+
+Create your label and milestone on: github.com/YOURUSERNAME/YOUR_REPOSITORY_NAME/milestones and github.com/YOURUSERNAME/YOUR_REPOSITORY_NAME/labels
+
