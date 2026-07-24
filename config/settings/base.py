@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'user_auth',  # Custom user authentication app
 ]
 
 MIDDLEWARE = [
@@ -84,14 +86,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('POSTGRES_DB'),          # Your database name
+        'USER': env('POSTGRES_USER'),              # Your database username
+        'PASSWORD': env('POSTGRES_PASSWORD'),      # Your database password
+        'HOST': env('POSTGRES_HOST'),             # Use localhost or server IP
+        'PORT': env('POSTGRES_PORT'),                  # Default PostgreSQL port
     }
 }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+AUTH_USER_MODEL = 'user_auth.User'  # Specify the custom user model
 
 AUTH_PASSWORD_VALIDATORS = [
     {
