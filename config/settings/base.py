@@ -40,7 +40,7 @@ ALLOWED_HOSTS = env('ALLOWED_HOSTS')
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,8 +48,23 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    'user_auth',  # Custom user authentication app
+    
 ]
+
+THIRD_PARTY_APPS = [
+    # Add your third-party apps here
+    # Like this, will be installed later. "rest_framework",
+]
+
+LOCAL_APPS = [
+    # Add your local apps here
+    "user_auth",
+]
+
+#Combine local apps, third party apps and django apps into one list of installed apps.
+# Works like a charm for production.
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS  
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
