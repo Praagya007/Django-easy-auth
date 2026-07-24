@@ -12,7 +12,7 @@ class UserManager(BaseUserManager):
     def create_user(
         self, 
         email, 
-        full_name, 
+        full_name="", 
         password=None, 
         **extra_fields
         ):
@@ -20,6 +20,9 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
+        
+        full_name= full_name.strip() or ""  # Ensure full_name is not None or empty
+        
         user = self.model(email=email, full_name=full_name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -47,15 +50,6 @@ class UserManager(BaseUserManager):
         return self.create_user(email, full_name, password, **extra_fields)
 
 
-
-
-
-
-
-
-
-
-
 """
 Note: AbstractUser is better than AbstractBaseUser because it is fast, has built in permissions 
 and is easier to implement. AbstractBaseUser requires a lot more work to implement, and 
@@ -72,8 +66,10 @@ class User(AbstractUser):
     You don't need the required=True flag, because by default, all fields are required in Django models.
     """
     email = models.EmailField(unique=True) # Make email unique, note unique auto creates an index
-    full_name = models.CharField(max_length=200) # Add a full name field
     
+    #Note: We have altered full name to be optional, esp. because 
+    # Social logins may not guarantee a full name thing. 
+    full_name = models.CharField(max_length=200, null=True, blank=True) 
     USERNAME_FIELD = 'email' # Set the email field as the unique identifier for authentication
     
     objects = UserManager() # Use the custom user manager for creating users and superusers
