@@ -21,7 +21,8 @@ class UserManager(BaseUserManager):
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         
-        full_name= full_name.strip() or ""  # Ensure full_name is not None or empty
+        # Treats None and "" identically before calling strip. Small change, huge difference in behavior.
+        full_name = (full_name or "").strip()
         
         user = self.model(email=email, full_name=full_name, **extra_fields)
         user.set_password(password)
@@ -69,7 +70,9 @@ class User(AbstractUser):
     
     #Note: We have altered full name to be optional, esp. because 
     # Social logins may not guarantee a full name thing. 
-    full_name = models.CharField(max_length=200, null=True, blank=True) 
+    # Avoid both null=True and blank=True, just a blank=True and default="" for CharField. 
+    # Note only set null=True when fields need to be unique. Nulls are not treated as duplicate entries.
+    full_name = models.CharField(max_length=200, blank=True, default="") 
     USERNAME_FIELD = 'email' # Set the email field as the unique identifier for authentication
     
     objects = UserManager() # Use the custom user manager for creating users and superusers
