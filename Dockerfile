@@ -50,5 +50,5 @@ COPY . .
 
 EXPOSE 8000
 
-# 2. Define the default startup command (MUST BE LAST)
+# Define the default startup command (MUST BE LAST)
 CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000"]
