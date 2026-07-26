@@ -53,12 +53,16 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+    # CRITICAL UV FIX: Avoid letting your host computer's blank or OS-specific 
+    # local folders overwrite or delete the internal container .venv directory
+    environment:
+      - UV_PROJECT_ENVIRONMENT=/app/.venv
+
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_healthy
-    command: uv run python manage.py runserver 0.0.0.0:8000
+        condition: service_healthy 
  
 
 

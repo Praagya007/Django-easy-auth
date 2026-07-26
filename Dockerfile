@@ -40,9 +40,15 @@ COPY pyproject.toml uv.lock* ./
 # --no-install-project ensures heavy 3rd-party libs are cached before copying local source code.
 RUN uv sync --frozen --no-install-project || uv sync --no-install-project
 
+#Imp fix: Add the uv virtual environment to the system PATH
+ENV PATH="/app/.venv/bin:$PATH"
+
 #COPY . . builds the code into the permanent image for production, 
 # while the bind-mount .:/app overrides it at runtime with your live files for development.
 COPY . .
 
 
 EXPOSE 8000
+
+# 2. Define the default startup command (MUST BE LAST)
+CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000"]
