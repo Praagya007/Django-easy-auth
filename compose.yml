@@ -1,21 +1,72 @@
+# The core services for the project.
 services:
   postgres:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    environment:
+    image: postgres:17-alpine #The base image.
+    restart: unless-stopped # Restart unless the container is explicitly stopped.
+
+    #Setup the environment variables for the database.
+    environment: 
       - POSTGRES_DB=${POSTGRES_DB:-django_easy_auth}
       - POSTGRES_USER=${POSTGRES_USER:-django_easy_auth_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-django_easy_auth_password}
+
+    #The default port for postgres.
     ports:
       - "5432:5432"
+
+    # This configuration saves your database files to a named Docker volume 
+    # (postgres_data) so they do not get deleted when the container stops.
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-django_easy_auth}"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      # Check the health of the postgres database.  
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-django_easy_auth} -d ${POSTGRES_DB:-django_easy_auth}"]
+      interval: 5s #Docker runs this check every 5 seconds.
+      timeout: 5s #The check fails if the command takes longer than 5 seconds to respond.
+      retries: 5 # RETRY the check 5 times before marking the container as unhealthy. 
+      start_period: 5s #The grace period before starting health checks. This allows the database to initialize before health checks begin.
 
+  redis:
+    image: redis:7-alpine #The base image.
+    restart: unless-stopped # Restart unless the container is explicitly stopped.
+
+    #The default port for redis.
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data 
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  django:
+    build:
+      context: . # This exact directory is the build context for the Dockerfile.
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uv run python manage.py runserver 0.0.0.0:8000
+ 
+
+
+
+
+#Volumes simply means this:  you are creating a named storage space (postgres_data), to save your database files 
+# outside the container so they do not get lost when the container stops
 volumes:
-  postgres_data:
+  postgres_data: 
+  redis_data:
+ 
