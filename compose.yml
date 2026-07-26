@@ -51,7 +51,9 @@ services:
       - .env
     ports:
       - "8000:8000"
-    volumes:
+    #Links local computer files to the container so you can edit them on your host computer 
+    # and see the changes reflected in the container.
+    volumes: 
       - .:/app
     # CRITICAL UV FIX: Avoid letting your host computer's blank or OS-specific 
     # local folders overwrite or delete the internal container .venv directory
