@@ -111,7 +111,7 @@ DATABASES = {
 }
 
 # CACHE: 
-CACHE = {
+CACHES = {
     "default":{
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": env('REDIS_URL'),  # Redis service name from the compose.yml file.
