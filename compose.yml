@@ -55,6 +55,20 @@ services:
     # and see the changes reflected in the container.
     volumes: 
       - .:/app
+
+      # A note about this right here: 
+      # When you run uv add package on your host machine, uv.lock and pyproject.toml will update.
+      # But, the .venv file will actually stay out of sync given this setup because this volumes section
+      # shields it from my hosts' changes. 
+
+      # To fix this, do these two steps:
+      # 1) Best practice: Rebuild the container with docker compose up --build --renew-anon-volumes
+      # 2) For adding inside running container, run: docker compose exec web uv sync 
+      # which will sync the venv directly using the updated lockfile.
+      
+
+      - /app/.venv # preserves whatever is inside the container's app /app/.venv folder so my host machine doesn't overwrite it."
+    
     # CRITICAL UV FIX: Avoid letting your host computer's blank or OS-specific 
     # local folders overwrite or delete the internal container .venv directory
     environment:
