@@ -151,6 +151,9 @@ SESSION_CACHE_ALIAS = 'default'  # Use the default cache for session storage
 SESSION_COOKIE_HTTPONLY = True  # Mitigates the risk of client-side script accessing the session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'  # Helps prevent CSRF attacks
 SESSION_COOKIE_SECURE = False  # Set to True in production when using HTTPS
+
+SESSION_COOKIE_AGE = 1209600  # Two weeks, in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session will expire when the user closes their browser
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
