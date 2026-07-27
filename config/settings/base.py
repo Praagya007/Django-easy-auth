@@ -110,6 +110,20 @@ DATABASES = {
     }
 }
 
+# CACHE: 
+CACHE = {
+    "default":{
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env('REDIS_URL'),  # Redis service name from the compose.yml file.
+        
+        # Only change this if Django itself manages the routing.
+        # To ShardClient if you have sharded Redis setup.
+        # To SentinelClient if you have a Redis Sentinel setup for HA.
+        "OPTIONS":{
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -130,7 +144,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Handling session cookies via cache like this:
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'  # Use the default cache for session storage
 
+SESSION_COOKIE_HTTPONLY = True  # Mitigates the risk of client-side script accessing the session cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # Helps prevent CSRF attacks
+SESSION_COOKIE_SECURE = False  # Set to True in production when using HTTPS
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
