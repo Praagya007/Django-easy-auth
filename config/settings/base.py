@@ -53,7 +53,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     # Add your third-party apps here
-    # Like this, will be installed later. "rest_framework",
+    "rest_framework",
 ]
 
 LOCAL_APPS = [
@@ -170,4 +170,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+"""
+# DRF baseline
+# Default-locked posture: every endpoint requires auth unless explicitly opened up
+# with permission_classes = [AllowAny] on that view. Safer failure mode for an
+# auth boilerplate — better to accidentally lock something down than accidentally
+# expose it.
+"""
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
 
