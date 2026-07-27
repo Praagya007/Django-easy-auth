@@ -1,4 +1,4 @@
-from base import *
+from .base import *  # noqa: F401,F403
 
 DEBUG = False #Always set to False in production
 
@@ -11,9 +11,8 @@ SESSION_COOKIE_HTTPONLY = True # Prevents JS from reading the session cookie, th
 SESSION_COOKIE_SAMESITE = 'Lax' # Prevents the browser from sending this cookie along with cross-site requests. Can be set to 'Strict', 'Lax', or 'None'
 CSRF_COOKIE_SAMESITE = 'Lax' # Prevents the browser from sending this cookie along with cross-site requests. Can be set to 'Strict', 'Lax', or 'None'
 
-CSRF_ALLOWED_ORIGINS=[
+CSRF_TRUSTED_ORIGINS = [
     'https://yourdomain.com', # Replace with your actual domain
 ]
 
 ALLOWED_HOSTS = ['yourdomain.com'] # Replace with your actual domain
-
