@@ -63,7 +63,7 @@ services:
 
       # To fix this, do these two steps:
       # 1) Best practice: Rebuild the container with docker compose up --build --renew-anon-volumes
-      # 2) For adding inside running container, run: docker compose exec web uv sync 
+      # 2) For adding inside running container, run: docker compose exec <container_name> uv sync 
       # which will sync the venv directly using the updated lockfile.
       
 
