@@ -47,13 +47,17 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    
+    'django.contrib.sites',  # Required for django-allauth
 ]
+
+SITE_ID = 1  # Required for django-allauth
 
 THIRD_PARTY_APPS = [
     # Add your third-party apps here
     "rest_framework",
+    "allauth", 
+    "allauth.account",
+    "allauth.headless"
 ]
 
 LOCAL_APPS = [
@@ -72,6 +76,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
