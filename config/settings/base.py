@@ -193,3 +193,31 @@ REST_FRAMEWORK = {
     ],
 }
 
+# django-allauth: headless mode
+# No Django-rendered templates for auth — allauth exposes JSON endpoints,
+# React consumes them directly. Older allauth tutorials assume the
+# template-rendering mode; don't copy config from those blindly.
+HEADLESS_ONLY = True
+HEADLESS_CLIENTS = ["browser"]  # Browser endpoints.
+
+# Email for sign up not username.
+ACCOUNT_SIGNUP_FIELDS = ["email*"]
+
+#Remove password verification for signup.
+ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False  
+# This is an extra field.
+ACCOUNT_SIGNUP_FORM_CLASS = "core.forms.HeadlessExtraSignupForm"  # Custom signup form for extra fields
+
+# No username
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None #No username needed.
+
+ACCOUNT_LOGIN_METHODS = {"email"}  # Use email for login
+
+ACCOUNT_ADAPTER = "core.adapters.AccountAdapter"
+# Mandatory verification, paired deliberately with enumeration prevention below —
+# ACCOUNT_PREVENT_ENUMERATION alone does not close the enumeration hole; it needs
+# mandatory verification to actually be meaningful (signup response can't leak
+# whether an email already exists if every signup gets the identical
+# "check your email" response regardless).
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_PREVENT_ENUMERATION = True
