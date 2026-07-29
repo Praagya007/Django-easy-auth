@@ -63,6 +63,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     # Add your local apps here
     "user_auth",
+    "core",
 ]
 
 #Combine local apps, third party apps and django apps into one list of installed apps.

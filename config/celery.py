@@ -1,5 +1,5 @@
 import os
-from .celery import Celery
+from celery import Celery
 
 # Point Celery at whichever settings module is active — same pattern
 # as manage.py/wsgi.py/asgi.py, so dev/prod split is respected here too.
