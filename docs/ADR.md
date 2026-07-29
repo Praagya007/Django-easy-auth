@@ -46,6 +46,14 @@ if the user doesn't click remember me, they will be logged out.
 **Consequences:**
 - Session availability now depends on Redis uptime (see ADR-001's consequences — this is the same tradeoff, stated from the storage-layer side).
 
+- Currently, we are sharing a single Caches['default'] which currently is supporting: sessions, general caching and Celery broker. For local dev its fine, but for production, a global cache.clear() will silently nuke all sessions, Celery tasks, and any other cached data. We will use multiple Redis backends to avoid this on later iterations. 
+
+- SESSION_COOKIE_SECURE is set to True in production but False in local development because we use HTTP here and not HTTPs. Setting this to True will break local development completely. This is a well known limitation where you use HTTP in local dev. 
+
+**Evidence:**
+- 127.0.0.1:6379[1]> KEYS *
+- 1) ":1:django.contrib.sessions.cache<nt9r2i460nimwm811ss5yxsndruwlrpb>"
+
 ---
 
 # ADR-003: Celery for async SMTP email sending
