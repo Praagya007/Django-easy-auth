@@ -221,3 +221,9 @@ ACCOUNT_ADAPTER = "core.adapters.AccountAdapter"
 # "check your email" response regardless).
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_PREVENT_ENUMERATION = True
+
+# Celery configuration and the settings needed for it to work with Django.
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')  # Separate this from the Redis URL used for app caching or sessions data.
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC' 
