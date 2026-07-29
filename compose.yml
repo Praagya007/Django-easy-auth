@@ -79,7 +79,29 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy 
- 
+
+  celery:
+    build: .
+    # Start the Celery background worker.
+    # It reads settings from the 'config' file.
+    # It prints basic updates to the terminal.
+    command: ["celery", "-A", "config", "worker", "--loglevel=info"]
+
+    
+    volumes:
+      - .:/app # Link local computer files to the container so you can edit them on your host computer and see the changes reflected in the container.
+
+      # Not just Django, but any service should not modify the .venv folder on the container
+      - /app/.venv # preserves whatever is inside the container's app /app/.venv folder so my host machine doesn't overwrite it.
+    env_file:
+      - .env
+    depends_on:
+      django:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      postgres: 
+        condition: service_healthy
 
 
 
