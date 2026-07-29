@@ -75,6 +75,19 @@ Send all SMTP email through Celery as background tasks, never synchronously in t
 - Adds Celery + Redis-as-broker as required infrastructure, not just for sessions.
 - Introduces eventual-consistency between "action taken" and "email delivered" (e.g. brief delay before a verification email arrives) — acceptable given the UX and reliability tradeoff.
 
+**Evidence:**
+- Celery has been successfully wired up in a Docker container, it starts.
+- Celery worker logs show the tasks successfully has been executed.
+
+```
+[2026-07-29 08:49:46,010: INFO/MainProcess] Connected to redis://redis:6379/0
+celery-1  | [2026-07-29 08:49:46,015: INFO/MainProcess] mingle: searching for neighbors
+celery-1  | [2026-07-29 08:49:47,023: INFO/MainProcess] mingle: all alone
+celery-1  | [2026-07-29 08:49:47,038: INFO/MainProcess] celery@788a843f7304 ready.
+celery-1  | [2026-07-29 09:02:46,032: INFO/MainProcess] Task core.tasks.send_test_email[3fffead5-b01f-4e8d-a4d5-96ed08089c8b] received
+celery-1  | [2026-07-29 09:02:46,033: WARNING/ForkPoolWorker-15] Test email task executed successfully.
+celery-1  | [2026-07-29 09:02:46,033: INFO/ForkPoolWorker-15] Task core.tasks.send_test_email[3fffead5-b01f-4e8d-a4d5-96ed08089c8b] succeeded in 0.0004870140001003165s: 'done'
+```
 ---
 
 # ADR-004: Caddy over Nginx
