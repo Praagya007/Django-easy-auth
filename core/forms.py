@@ -22,10 +22,8 @@ class HeadlessExtraSignupForm(forms.Form):
         # 1. Remove null bytes completely
         cleaned_data = data.replace('\x00', '')
         
-        # 2. Escape HTML characters to prevent XSS script injection
-        sanitized_data = html.escape(cleaned_data)
         
-        return sanitized_data.strip()
+        return cleaned_data.strip()
     
     
     def signup(self, request, user):
