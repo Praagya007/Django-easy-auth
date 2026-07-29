@@ -31,7 +31,10 @@ Use Django's built-in session authentication, not JWT.
 Given ADR-001 (sessions over JWT), need to decide where session data lives.
 
 **Decision:**
-Pure Redis-backed sessions, not database-backed.
+- Pure Redis-backed sessions, not database-backed.
+- Added a SESSION_COOKIE_AGE for 14 days and SESSION_EXPIRE_AT_BROWSER_CLOSE to True, 
+if the user doesn't click remember me, they will be logged out.
+- We're using django-redis as our cache backend — not just for session storage, but also for general application caching and as the Celery broker. Since Redis was already wired up for those other jobs, we pointed Django's built-in cache-based session engine at that same CACHES["default"] instead of adding a separate Redis connection just for sessions. One Redis connection, three jobs, rather than three separate ones.
 
 **Reasoning:**
 - Sub-millisecond read/write latency, faster than a DB round-trip.
