@@ -42,7 +42,14 @@ COPY pyproject.toml uv.lock* ./
 RUN uv sync --frozen --no-install-project || uv sync --no-install-project
 
 #Imp fix: Add the uv virtual environment to the system PATH
-ENV PATH="/app/.venv/bin:$PATH"
+# Otherwise, Docker forgets that Linux commands exist on this container lol😂
+
+# Optimization: 
+# Logs appear in your terminal asap, no buffering.
+# Python won't write those annoying .pyc files to disk.
+ENV PATH="/app/.venv/bin:$PATH" \
+PYTHONUNBUFFERED=1 \
+PYTHONDONTWRITEBYTECODE=1
 
 #COPY . . builds the code into the permanent image for production, 
 # while the bind-mount .:/app overrides it at runtime with your live files for development.
