@@ -10,7 +10,7 @@ WORKDIR /app
 # 1) RUN: Execute this command during the image build process.
 
 # 2) apt-get-update: Update the local index of available packages from the internet. It is, 
-# located at files: /app/apt/sources.list.d/debian.sources.
+# located at files: /etc/apt/sources.list.d/debian.sources.
 
 # 3) && apt-get-install -y: And install the following packages. Note -y flag automatically confirms prompts during installation.
 
