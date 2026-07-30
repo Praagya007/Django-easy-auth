@@ -10,10 +10,11 @@ WORKDIR /app
 # 1) RUN: Execute this command during the image build process.
 # 2) apt-get-update: Update the local index of available packages from the internet.
 # 3) && apt-get-install -y: And install the following packages. Note -y flag automatically confirms prompts during installation.
-# 4) build-essential: Installs bundle of essential packages for compiling software, including gcc, g++, make, etc.
-# 5) libpq-dev: Installs the development libraries and headers for PostgreSQL.
-# 6) && rm -rf /var/lib/apt/lists/*: Delete them package list installed during apt-get update to reduce the image size. This is a common practice in Dockerfiles to keep the final image as small as possible.
-RUN apt-get update && apt-get install -y \
+# 4) --no-install-recommends: Avoids installing unnecessary recommended packages, keeping the image smaller.
+# 5) build-essential: Installs bundle of essential packages for compiling software, including gcc, g++, make, etc.
+# 6) libpq-dev: Installs the development libraries and headers for PostgreSQL.
+# 7) && rm -rf /var/lib/apt/lists/*: Delete them package list installed during apt-get update to reduce the image size. This is a common practice in Dockerfiles to keep the final image as small as possible.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
