@@ -1,6 +1,7 @@
 # The core services for the project.
 services:
   postgres:
+
     image: postgres:17-alpine #The base image.
     restart: unless-stopped # Restart unless the container is explicitly stopped.
 
@@ -18,23 +19,32 @@ services:
     # (postgres_data) so they do not get deleted when the container stops.
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     healthcheck:
       # Check the health of the postgres database.  
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-django_easy_auth} -d ${POSTGRES_DB:-django_easy_auth}"]
+
       interval: 5s #Docker runs this check every 5 seconds.
+
       timeout: 5s #The check fails if the command takes longer than 5 seconds to respond.
+
       retries: 5 # RETRY the check 5 times before marking the container as unhealthy. 
+
       start_period: 5s #The grace period before starting health checks. This allows the database to initialize before health checks begin.
 
   redis:
+
     image: redis:7-alpine #The base image.
+
     restart: unless-stopped # Restart unless the container is explicitly stopped.
 
     #The default port for redis.
     ports:
       - "6379:6379"
+      
     volumes:
       - redis_data:/data 
+
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -43,16 +53,21 @@ services:
       start_period: 5s
 
   django:
+
     build:
       context: . # This exact directory is the build context for the Dockerfile.
       dockerfile: Dockerfile
+
     restart: unless-stopped
+
     env_file:
       - .env
+
     ports:
       - "8000:8000"
     #Links local computer files to the container so you can edit them on your host computer 
     # and see the changes reflected in the container.
+
     volumes: 
       - .:/app
 
@@ -95,11 +110,15 @@ services:
       - /app/.venv # preserves whatever is inside the container's app /app/.venv folder so my host machine doesn't overwrite it.
     env_file:
       - .env
+
     depends_on:
+
       django:
         condition: service_started
+
       redis:
         condition: service_healthy
+
       postgres: 
         condition: service_healthy
 
@@ -108,7 +127,9 @@ services:
 
 #Volumes simply means this:  you are creating a named storage space (postgres_data), to save your database files 
 # outside the container so they do not get lost when the container stops
+
 volumes:
   postgres_data: 
+
   redis_data:
  
