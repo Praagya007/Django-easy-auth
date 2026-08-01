@@ -59,7 +59,8 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "allauth", 
     "allauth.account",
-    "allauth.headless"
+    "allauth.headless",
+    'corsheaders',  # For handling CORS 
 ]
 
 LOCAL_APPS = [
@@ -74,9 +75,10 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.security.SecurityMiddleware', # This always first.
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware place as high as possible.
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -161,6 +163,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Tuning CORS for React apps:
+CORS_ALLOWED_ORIGINS = env.list(
+    'CORS_ALLOWED_ORIGINS', 
+    default=['http://127.0.0.1:5173', 'http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:3000']
+) # Split the comma-separated list of allowed origins
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies to be sent in cross-origin requests
+
 
 # Handling session cookies via cache like this:
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
