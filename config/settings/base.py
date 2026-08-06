@@ -35,7 +35,9 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production! 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', 
+    default=['localhost', '127.0.0.1', '[::1]', 'host.docker.internal', 'django']
+)  # Split the comma-separated list of allowed hosts
 
 
 # Application definition
@@ -57,7 +59,9 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "allauth", 
     "allauth.account",
-    "allauth.headless"
+    "allauth.headless",
+    'corsheaders',  # For handling CORS 
+    'anymail',  # For sending emails via Brevo (formerly Sendinblue)
 ]
 
 LOCAL_APPS = [
@@ -72,9 +76,10 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.security.SecurityMiddleware', # This always first.
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware place as high as possible.
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -160,6 +165,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Tuning CORS for React apps:
+CORS_ALLOWED_ORIGINS = env.list(
+    'CORS_ALLOWED_ORIGINS', 
+    default=['http://127.0.0.1:5173', 'http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:3000']
+) # Split the comma-separated list of allowed origins
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies to be sent in cross-origin requests
+
+
 # Handling session cookies via cache like this:
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'  # Use the default cache for session storage
@@ -237,3 +250,19 @@ CELERY_BROKER_URL = env('CELERY_BROKER_URL')  # Separate this from the Redis URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC' 
+
+
+# For sending emails, we use Brevo (formerly Sendinblue) via Anymail.
+
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')  # Default "from" email address for outgoing emails
+# This will require a ADMINS= setting in production btw. 
+SERVER_EMAIL = env('SERVER_EMAIL')  # Email address that error messages come from, such as those sent to ADMINS and MAN
+
+
+# This is for production, sending emails. 
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'  # Use Anymail's Brevo backend for sending emails
+
+# ANYMAIL API key for Brevo.
+ANYMAIL= {
+    "BREVO_API_KEY": env('BREVO_API_KEY'),  # Brevo API key for sending emails
+}

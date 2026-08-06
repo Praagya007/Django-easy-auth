@@ -14,5 +14,3 @@ CSRF_COOKIE_SAMESITE = 'Lax' # Prevents the browser from sending this cookie alo
 CSRF_TRUSTED_ORIGINS = [
     'https://yourdomain.com', # Replace with your actual domain
 ]
-
-ALLOWED_HOSTS = ['yourdomain.com'] # Replace with your actual domain
