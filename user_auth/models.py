@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinLengthValidator
 #AbstractUser and BaseUserManager to create a custom user model and manager.
 from django.contrib.auth.models import AbstractUser,  BaseUserManager 
 
@@ -72,7 +73,8 @@ class User(AbstractUser):
     # Social logins may not guarantee a full name thing. 
     # Avoid both null=True and blank=True, just a blank=True and default="" for CharField. 
     # Note only set null=True when fields need to be unique. Nulls are not treated as duplicate entries.
-    full_name = models.CharField(max_length=200, blank=True, default="") 
+    # Min length validator ensures min 10 chars exist.
+    full_name = models.CharField(max_length=200, blank=True, default="", validators=[MinLengthValidator(10)]   ) 
     USERNAME_FIELD = 'email' # Set the email field as the unique identifier for authentication
     
     objects = UserManager() # Use the custom user manager for creating users and superusers
