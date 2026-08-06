@@ -61,6 +61,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.headless",
     'corsheaders',  # For handling CORS 
+    'anymail',  # For sending emails via Brevo (formerly Sendinblue)
 ]
 
 LOCAL_APPS = [
@@ -249,3 +250,19 @@ CELERY_BROKER_URL = env('CELERY_BROKER_URL')  # Separate this from the Redis URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC' 
+
+
+# For sending emails, we use Brevo (formerly Sendinblue) via Anymail.
+
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')  # Default "from" email address for outgoing emails
+# This will require a ADMINS= setting in production btw. 
+SERVER_EMAIL = env('SERVER_EMAIL')  # Email address that error messages come from, such as those sent to ADMINS and MAN
+
+
+# This is for production, sending emails. 
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'  # Use Anymail's Brevo backend for sending emails
+
+# ANYMAIL API key for Brevo.
+ANYMAIL= {
+    "BREVO_API_KEY": env('BREVO_API_KEY'),  # Brevo API key for sending emails
+}
