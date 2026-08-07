@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from validators import DISPOSABLE_EMAIL_DOMAINS
+from .validators import DISPOSABLE_EMAIL_DOMAINS, email_regex_validator
 
         
         
@@ -13,7 +13,7 @@ class InitialRegisterSerializer(serializers.ModelSerializer):
     Plus, EmailField automatically validates the email format.
     """
     
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(required=True, validators=[email_regex_validator])
     # allow_blank=True and required=False make it optional
     full_name = serializers.CharField(required=False, allow_blank=True)
 
