@@ -32,8 +32,8 @@ class RegisterInitialView(CreateAPIView):
         
         # Finally, return a generic response immediately, never leak whether the email is already registered or not.
         return Response(
-            {"message": "If the email is not already registered,\
-                you will receive an email with an OTP to verify your email address."},
+            {"message": "If the email is not already registered,"
+                " you will receive an email with an OTP to verify your email address."},
             status=status.HTTP_202_ACCEPTED
         )
         
