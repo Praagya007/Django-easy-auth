@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 
 from .validators import DISPOSABLE_EMAIL_DOMAINS, email_regex_validator
 
+from django.contrib.auth.base_user import BaseUserManager
         
         
 User= get_user_model()
@@ -30,7 +31,8 @@ class InitialRegisterSerializer(serializers.ModelSerializer):
         domain = value.split('@')[-1]
         if domain in DISPOSABLE_EMAIL_DOMAINS:
             raise serializers.ValidationError("Disposable email addresses are not allowed.")
-        return value
+        value = BaseUserManager.normalize_email(value)  # Normalize the email address (lowercase domain part)
+        return value 
     
     
     def validate_full_name(self, value):
