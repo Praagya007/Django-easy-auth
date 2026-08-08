@@ -63,6 +63,15 @@ class User(AbstractUser):
     first_name = None
     last_name = None
     
+    class Status(models.TextChoices):
+        VERIFIED = "verified", "Verified"
+        UNVERIFIED = "unverified", "Unverified"
+        SUSPENDED = "suspended", "Suspended"
+        BANNED = "banned", "Permanently Banned"
+        DELETED = "deleted", "Soft Deleted"
+    
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.UNVERIFIED)
+    
     """
     Now, we add the fields that we actually need: 
     You don't need the required=True flag, because by default, all fields are required in Django models.
@@ -101,3 +110,12 @@ class User(AbstractUser):
     def get_short_name(self): 
         # Safely extracts the first name, or falls back to the email if empty
         return self.full_name.split(' ')[0] if self.full_name else self.email
+    
+    # Now, override the save method to ensure that status is in sync with is_active.
+    def save(self, *args, **kwargs):
+        # Automatically keep Django's core login flag in sync
+        if self.status == self.Status.VERIFIED:
+            self.is_active = True
+        else:
+            self.is_active = False
+        super().save(*args, **kwargs)
